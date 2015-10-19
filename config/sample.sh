@@ -1,0 +1,9 @@
+export SHIMMER_HOST=''
+
+
+export TIDEPOOL_HOST=''
+export TIDEPOOL_UPLOAD_HOST=''
+
+export UPLOADER_LOGIN=''
+export UPLOADER_PASSWORD=''
+export UPLOADER_USERID=''
