@@ -83,10 +83,15 @@ switch(process.argv[2]) {
 		break;
 	case 'delete':
 		console.log('Deleting activity notes');
-		mussel.deleteActivityNotes('0e5fab3f1a', done);
+		mussel.deleteActivityNotes(process.argv[3], done);
+		//0e5fab3f1a
 		break; 
 	default:
-		console.log('unknown argument');
+		console.log('Incorrect arguments');
+		console.log('Usage:');
+		console.log('node musselrunner.js sync');
+		console.log('or');
+		console.log('node musselrunner.js delete userid');
 
 }
 

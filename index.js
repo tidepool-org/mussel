@@ -174,7 +174,7 @@ Mussel.prototype.getUsers = function(cb) {
 }
 
 Mussel.prototype.deleteActivityNotes = function(userid, cb) {
-	console.log('preparing to delete notes');
+	console.log('preparing to delete notes for:'+userid);
 	this.login(function(err,response) {
 
 		this.tidepool.getNotesForUserWithPattern(userid, null, /#physical-activity/, function(err, response){
@@ -213,26 +213,3 @@ function done(err, response) {
 }
 
 module.exports = Mussel;
-/**
-var fromDate =  new Date();
-fromDate.setMonth(fromDate.getMonth()-1);
-
-
-
-var SHIMMER_HOST='http://omh-shimmer.datanosh.com:8083';
-var shimmer = new Shimmer({'host':SHIMMER_HOST});
-
-shimmer.getAuths('tp|0e5fab3f1a|https://devel-api.tidepool.io', done);
-**/
-//shimmer.getConfiguredShims(done);
-
-//mussel.uploadPhysicalActivityData('nosh', 'jawbone', fromDate.toJSON(), new Date().toJSON(), '0e5fab3f1a', null);
-
-//syncActivities();
-//mussel.syncNewActivityData('nosh', 'jawbone','0e5fab3f1a', null);
-//mussel.deleteActivityNotes('0e5fab3f1a', done); 
-
-//mussel.getActivityData('nosh', 'jawbone', '2015-10-07T00:54:39.901Z', '2015-10-07T23:54:39.901Z', done);
-	
-
-
