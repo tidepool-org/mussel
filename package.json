@@ -12,7 +12,7 @@
   "dependencies": {
     "tidepool-platform-client":"nosh/platform-client",
     "lodash":"*",
-    "superagent":"*"
+    "shimmer-client":"nosh/shimmer-client"
 	}
   
 }

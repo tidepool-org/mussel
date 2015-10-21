@@ -1,6 +1,6 @@
 var _ = require('lodash');
 var createTidepoolClient = require('tidepool-platform-client');
-var Shimmer = require('./shimmer-client.js');
+var Shimmer = require('shimmer-client');
 
 //DEBUG = false;
 
