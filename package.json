@@ -8,11 +8,10 @@
   },
   "author": "",
   "license": "ISC",
-
   "dependencies": {
-    "tidepool-platform-client":"nosh/platform-client",
-    "lodash":"*",
-    "shimmer-client":"nosh/shimmer-client"
-	}
-  
+    "express": "^4.13.3",
+    "lodash": "*",
+    "shimmer-client": "nosh/shimmer-client",
+    "tidepool-platform-client": "nosh/platform-client"
+  }
 }
