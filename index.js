@@ -197,6 +197,9 @@ Mussel.prototype.getAuths = function(user, cb) {
 	this.shimmer.getAuths(user, cb);
 }
 
+Mussel.prototype.deauthorize = function(shim, user, cb) {
+	this.shimmer.deauthorize(shim, user, cb);
+}
 
 function done(err, response) {
 	if (err != null) {
