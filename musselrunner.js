@@ -8,7 +8,7 @@ app.get("/auths/:userid", function(req, res) {
 	var auths = mussel.getAuths(req.params.userid, function(err, response) {
 	if (err) {
 		console.log('error:'+err);
-		res.send(error);
+		res.send(err);
 	} else {
 		console.log(response);
 		res.send(response);
