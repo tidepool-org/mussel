@@ -4,14 +4,22 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "jshint": "gulp jshint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bunyan": "^1.5.1",
     "express": "^4.13.3",
     "lodash": "*",
     "shimmer-client": "nosh/shimmer-client",
-    "tidepool-platform-client": "nosh/platform-client"
+    "tidepool-platform-client": "file:/Users/nosh/Dropbox/projects/tidepool/platform-client"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-jshint": "^1.12.0",
+    "jshint": "^2.8.0",
+    "jshint-stylish": "^2.0.1"
   }
 }

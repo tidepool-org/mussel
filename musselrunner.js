@@ -1,5 +1,11 @@
+'use strict';
+
 var Mussel = require('./index.js');
 var express = require("express");
+
+var bunyan = require('bunyan');
+var log = bunyan.createLogger({name: "musselrunner"});
+
 var app = express();
 
 app.get("/auths/:userid", function(req, res) {
@@ -7,10 +13,9 @@ app.get("/auths/:userid", function(req, res) {
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	var auths = mussel.getAuths(req.params.userid, function(err, response) {
 	if (err) {
-		console.log('error:'+err);
+		log.warn(err, "Error getting authorizations");
 		res.send(err);
 	} else {
-		console.log(response);
 		res.send(response);
 	}
 	});
@@ -22,24 +27,23 @@ app.get("/deauthorize/:shim", function(req, res) {
 	res.header("Access-Control-Allow-Headers", "X-Requested-With");
 	mussel.deauthorize(req.params.shim, username, function(err, response) {
 		if (err) {
-			console.log('error:'+err);
+			log.warn(err, "Error deauthorizing");
 			res.send(err);
 		} else{
-			console.log(response);
 			res.send(response);
 		}
 	});
 
 });
 
-var SHIMMER_HOST=process.env.SHIMMER_HOST
+var SHIMMER_HOST=process.env.SHIMMER_HOST;
 
-var TIDEPOOL_HOST=process.env.TIDEPOOL_HOST
-var TIDEPOOL_UPLOAD_HOST=process.env.TIDEPOOL_UPLOAD_HOST
+var TIDEPOOL_HOST=process.env.TIDEPOOL_HOST;
+var TIDEPOOL_UPLOAD_HOST=process.env.TIDEPOOL_UPLOAD_HOST;
 
-var UPLOADER_LOGIN=process.env.UPLOADER_LOGIN
-var UPLOADER_PASSWORD=process.env.UPLOADER_PASSWORD
-var UPLOADER_USERID=process.env.UPLOADER_USERID
+var UPLOADER_LOGIN=process.env.UPLOADER_LOGIN;
+var UPLOADER_PASSWORD=process.env.UPLOADER_PASSWORD;
+var UPLOADER_USERID=process.env.UPLOADER_USERID;
 
 
 var tidepoolConfig = {
@@ -49,50 +53,53 @@ var tidepoolConfig = {
 		  	};
 var shimmerConfig = {'host':SHIMMER_HOST};
 
-
-console.log('TidePool Config:');
-console.log(tidepoolConfig);
-console.log('\n');
-console.log('Shimmer Config:')
-console.log(shimmerConfig);
+log.info('TidePool Config:');
+log.info(tidepoolConfig);
+log.info('Shimmer Config:');
+log.info(shimmerConfig);
 
 function syncActivities() {
 	
 	var mussel = new Mussel(shimmerConfig, tidepoolConfig);
 	var users = mussel.getUsers(function(err, users){
 		if (err) {
-			console.log('error:'+err);
+			log.warn(err, "Error getting users");
 		} else {
-			console.log(users);
+			log.info(users);
 			for (var i=0; i< users.length; i++) {
 				var omhUser = users[i].username;
 
 				var split = omhUser.split('|');
 				if (split < 3 || split[0] != 'tp') {
 					//ignore records that are not in proper format
-					break;
+					continue;
 				}
 				var tpUserId = split[1];
-				//only support single device authorization for now
+				log.info('\nSyncing data for Tidepool user:'+tpUserId);
+				
 				for (var j=0; j< users[i].auths.length; j++) {
 					var shim = users[i].auths[j];
-
-					console.log('\nSyncing data for Tidepool user:'+tpUserId);
-					console.log('Syncing from OMH user:'+omhUser);
-					console.log('For Device:'+shim+'\n\n');
-					mussel.syncNewActivityData(omhUser, shim, tpUserId);
+					syncUser(omhUser, shim, tpUserId);
 				}
 			}
 		}
 	});
 }
 
-
-
+function syncUser(omhUser, shim, tpUserId) {
+	if (tpUserId == "2e55bc37d7") {
+		log.info('\nSyncing data for Tidepool user:'+tpUserId);
+		log.info('Syncing from OMH user:'+omhUser);
+		log.info('For Device:'+shim+'\n\n');
+		mussel.syncNewActivityData(omhUser, shim, tpUserId);
+	} else {
+		log.info("not syncing data for: "+tpUserId);
+	}
+}
 
 function done(err, response) {
 	if (err != null) {
-		console.log(err)
+		console.log(err);
 	} else {
 		//console.log('handles:')
 		console.log(response);
@@ -109,6 +116,10 @@ switch(process.argv[2]) {
 		console.log('Syncing activities');
 		exitAfter(30000);
 		syncActivities();
+		break;
+	case 'syncuser':
+		syncUser(process.argv[3], process.argv[4], process.argv[5]);
+		exitAfter(30000);
 		break;
 	case 'delete':
 		console.log('Deleting activity notes');
@@ -140,5 +151,50 @@ function exitAfter(millis) {
 			}, millis);
 }
 
+var now = new Date();
+var twoMonthsAgo = new Date();
+twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 3);
+
+//syncUser("tp|2e55bc37d7|https://devel-api.tidepool.io", "jawbone", "2e55bc37d7");
+/**
+mussel.getActivityData("tp|0e5fab3f1a|https://devel-api.tidepool.io", "runkeeper", twoMonthsAgo.toISOString(), now.toISOString(), function(err, response) {
+	mussel.transformActivitiesToTidepoolActivities(response, function(err, response) {
+		//console.log(response);
+		var objects = response;
+		mussel.login(function(err, response) {
+			if (err) {
+				console.log("error logging in - exiting")
+				process.exit();
+			} else {
+				console.log("attempting to write objects:"+objects.length)
+				mussel.writeTPActivities_ToObjects(objects, "2e55bc37d7", "", function(err, response) {
+					if (err) {
+						console.log("write unsuccesful")
+						console.log(err);
+					}
+					else {
+						console.log("write succesful")
+						console.log(response);
+					}
+				})
+			}
+		})
+	})
+})
+**/
+
+/**
+mussel.login(function(err, response) {
+	mussel.getLastActivity_FromObjects("2e55bc37d7","jawbone", function(err, response) {
+		if (err) {
+			console.log("error:");
+			console.log(err)
+		} else {
+			//console.log(response);
+		}
+	})
+})
+
+**/
 
 
