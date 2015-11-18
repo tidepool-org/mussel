@@ -87,14 +87,10 @@ function syncActivities() {
 }
 
 function syncUser(omhUser, shim, tpUserId) {
-	if (tpUserId == "2e55bc37d7") {
-		log.info('\nSyncing data for Tidepool user:'+tpUserId);
-		log.info('Syncing from OMH user:'+omhUser);
-		log.info('For Device:'+shim+'\n\n');
-		mussel.syncNewActivityData(omhUser, shim, tpUserId);
-	} else {
-		log.info("not syncing data for: "+tpUserId);
-	}
+	log.info('\nSyncing data for Tidepool user:'+tpUserId);
+	log.info('Syncing from OMH user:'+omhUser);
+	log.info('For Device:'+shim+'\n\n');
+	mussel.syncNewActivityData(omhUser, shim, tpUserId, done);
 }
 
 function done(err, response) {
@@ -125,7 +121,6 @@ switch(process.argv[2]) {
 		console.log('Deleting activity notes');
 		exitAfter(30000);
 		mussel.deleteActivityNotes(process.argv[3], done);
-		//0e5fab3f1a
 		break; 
 	case 'service':
 		var port = process.env.PORT || 5000;
@@ -137,6 +132,8 @@ switch(process.argv[2]) {
 		console.log('Incorrect arguments');
 		console.log('Usage:');
 		console.log('node musselrunner.js sync');
+		console.log('or');
+		console.log('node musselrunner.js syncuser omhUserid, shim, tidepoolUserId');
 		console.log('or');
 		console.log('node musselrunner.js delete userid');
 		console.log('or');

@@ -20,11 +20,11 @@ function Mussel(shimmerConfig, tidepoolConfig) {
 	if (process.env.WRITE_ACTIVITY_OBJECTS == 'true') {
 		this.writeActivityObjects = true;
 	} else {
-		this.writeActivityObjects = true;
+		this.writeActivityObjects = false;
 	}
 
 	//optionally either write activity objects or notes
-	if (process.env.WRITE_ACTIVITY_OBJECTS == 'true') {
+	if (this.writeActivityObjects) {
 		log.info('Writing activities to tidepool objects');
 		this.getLastActivity = this.getLastActivity_FromObjects;
 		this.getTPActivities = this.getTPActivities_FromObjects;
@@ -85,7 +85,7 @@ Mussel.prototype.uploadPhysicalActivityData = function(omhUser, shim, fromDate, 
 						if (err) {
 							cb(err);
 						} else {
-							cb(null, err);
+							cb(null, response);
 						}
 					}.bind(this));
 				}
