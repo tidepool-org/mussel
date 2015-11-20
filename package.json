@@ -14,7 +14,7 @@
     "express": "^4.13.3",
     "lodash": "*",
     "shimmer-client": "nosh/shimmer-client",
-    "tidepool-platform-client": "file:/Users/nosh/Dropbox/projects/tidepool/platform-client"
+    "tidepool-platform-client": "nosh/platform-client"
   },
   "devDependencies": {
     "gulp": "^3.9.0",

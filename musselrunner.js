@@ -123,7 +123,7 @@ switch(process.argv[2]) {
 		mussel.deleteActivityNotes(process.argv[3], done);
 		break; 
 	case 'service':
-		var port = process.env.PORT || 5000;
+		var port = process.env.MUSSEL_PORT || 5000;
 		 app.listen(port, function() {
 		   console.log("Listening on " + port);
 		 });
