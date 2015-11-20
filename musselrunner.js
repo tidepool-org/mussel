@@ -14,7 +14,7 @@ app.get("/auths/:userid", function(req, res) {
 	var auths = mussel.getAuths(req.params.userid, function(err, response) {
 	if (err) {
 		log.warn(err, "Error getting authorizations");
-		res.send(err);
+		res.status(500).send({ error: 'unable to retrieve auths', errorMsg:err });
 	} else {
 		res.send(response);
 	}
@@ -28,7 +28,7 @@ app.get("/deauthorize/:shim", function(req, res) {
 	mussel.deauthorize(req.params.shim, username, function(err, response) {
 		if (err) {
 			log.warn(err, "Error deauthorizing");
-			res.send(err);
+			res.status(500).send({ error: 'unable to deauthorize', errorMsg:err });
 		} else{
 			res.send(response);
 		}
