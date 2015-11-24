@@ -39,7 +39,6 @@ function Mussel(shimmerConfig, tidepoolConfig) {
 }
 
 Mussel.prototype.login = function(cb) {
-	
 	this.tidepool.login({username:this.uploaderDetails.uploaderLogin, password:this.uploaderDetails.uploaderPassword}, {remember:false}, function(err, response) {
 		if (err) {
 			log.warn(err, 'Error logging in');
@@ -52,45 +51,33 @@ Mussel.prototype.login = function(cb) {
 };
 
 Mussel.prototype.syncNewActivityData = function(omhUser, shim, tpUserId, cb) {
-	this.login(function(err, response) {
+	this.getLastActivity(tpUserId, shim, function(err, fromDate) {
 		if (err) {
+			log.warn(err, "Could not retrieve last activity");
 			cb(err);
 		} else {
-			this.getLastActivity(tpUserId, shim, function(err, fromDate) {
-				if (err) {
-					log.warn(err, "Could not retrieve last activity");
-					cb(err);
-				} else {
-					//work around for bug with jawbone, where date from last day is not returned. fixed in next version. remove when new docker containers are released
-					var todayPlus1 = new Date();
-					todayPlus1.setDate(todayPlus1.getDate()+1);
-					todayPlus1 = todayPlus1.toJSON();
-					this.uploadPhysicalActivityData(omhUser, shim, fromDate.toJSON(), todayPlus1, tpUserId, cb);
-				}
-			}.bind(this));
+			//work around for bug with jawbone, where date from last day is not returned. fixed in next version. remove when new docker containers are released
+			var todayPlus1 = new Date();
+			todayPlus1.setDate(todayPlus1.getDate()+1);
+			todayPlus1 = todayPlus1.toJSON();
+			this.uploadPhysicalActivityData(omhUser, shim, fromDate.toJSON(), todayPlus1, tpUserId, cb);
 		}
 	}.bind(this));
 };
 
+
 Mussel.prototype.uploadPhysicalActivityData = function(omhUser, shim, fromDate, toDate, tpUserId, cb) {
-	this.login(function(err, response) {
+	this.getTPActivities(omhUser, shim, fromDate, toDate, function(err, response) {
 		if (err) {
 			cb(err);
 		} else {
-			this.getTPActivities(omhUser, shim, fromDate, toDate, function(err, response) {
+			this.writeTPActivities(response, tpUserId, this.uploaderDetails.uploaderUserId, function(err, response) {
 				if (err) {
 					cb(err);
 				} else {
-					this.writeTPActivities(response, tpUserId, this.uploaderDetails.uploaderUserId, function(err, response) {
-						if (err) {
-							cb(err);
-						} else {
-							cb(null, response);
-						}
-					}.bind(this));
+					cb(null, response);
 				}
 			}.bind(this));
-			
 		}
 	}.bind(this));
 };
@@ -137,14 +124,15 @@ Mussel.prototype.transformActivitiesToTidepoolActivities = function(activities, 
 		var activityTimestamp = new Date(activityArr[i].body.effective_time_frame.time_interval.start_date_time);
 		
 		// prepare common fields for Activities object
+		var currentTime = new Date();
 		var tpActivityObj = {
 			"type":"physicalActivity",
 			"subType": this.getShimKey(activityArr[i].header.acquisition_provenance.source_name),
 			"time": activityTimestamp.toISOString(),
     		"timezoneOffset":-activityTimestamp.getTimezoneOffset(),
     		"conversionOffset":0,
-    		"deviceId": "runkeeper-A1234", 
-    		"uploadId": "0001"
+    		"deviceId": this.getShimKey(activityArr[i].header.acquisition_provenance.source_name), 
+    		"uploadId": "upload-"+currentTime.toISOString()
     	};
 
     	delete activityArr[i].header.schema_id;
@@ -186,7 +174,6 @@ Mussel.prototype.transformActivitiesToNotes = function(activities, cb) {
 
 		var omhSchemaText = JSON.stringify(omhSchema, null, 2);
 		
-		//' at '+ omhSchema.effective_time_frame.time_interval.start_date_time+ 
 		var noteText = omhSchema.activity+
 					' for ' + omhSchema.effective_time_frame.time_interval.duration.value + ' ' + omhSchema.effective_time_frame.time_interval.duration.unit;
 		var additionalText = '';
@@ -259,7 +246,7 @@ Mussel.prototype.getLastActivity_FromObjects = function (userId, device, cb) {
 
 Mussel.prototype.writeTPActivities_ToObjects = function(objects, userId, userId2, cb) {
 	for (var i=0; i < objects.length; i++) {
-		log.info("submitting write to tidepool");
+		log.info("submitting write to tidepool for user:"+userId);
 		this.tidepool.uploadDeviceDataForUser(userId, objects[i], cb);
 	}
 };
@@ -278,18 +265,15 @@ Mussel.prototype.getUsers = function(cb) {
 
 Mussel.prototype.deleteActivityNotes = function(userid, cb) {
 	log.info('preparing to delete notes for: %s',userid);
-	this.login(function(err,response) {
-
-		this.tidepool.getNotesForUserWithPattern(userid, null, /#physical-activity/, function(err, response){
-			if (err) {
-				cb(err);
-			} else {
-				var notes = response;
-				for (var i=0; i< notes.length; i++) {
-					this.tidepool.deleteMessage(notes[i].id, cb);
-				}
+	this.tidepool.getNotesForUserWithPattern(userid, null, /#physical-activity/, function(err, response){
+		if (err) {
+			cb(err);
+		} else {
+			var notes = response;
+			for (var i=0; i< notes.length; i++) {
+				this.tidepool.deleteMessage(notes[i].id, cb);
 			}
-		}.bind(this));
+		}
 	}.bind(this));
 };
 

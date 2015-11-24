@@ -2,6 +2,7 @@
 
 var Mussel = require('./index.js');
 var express = require("express");
+var schedule = require('node-schedule');
 
 var bunyan = require('bunyan');
 var log = bunyan.createLogger({name: "musselrunner"});
@@ -107,6 +108,7 @@ function done(err, response) {
 }
 var mussel = new Mussel(shimmerConfig, tidepoolConfig);
 
+mussel.login(function(err, response) {
 switch(process.argv[2]) {
 	case 'sync':
 		console.log('Syncing activities');
@@ -124,10 +126,11 @@ switch(process.argv[2]) {
 		break; 
 	case 'service':
 		var port = process.env.MUSSEL_PORT || 5000;
-		 app.listen(port, function() {
+		app.listen(port, function() {
 		   console.log("Listening on " + port);
 		 });
-		 break;
+		var j = schedule.scheduleJob('*/2 * * * *', syncActivities);
+		break;
 	default:
 		console.log('Incorrect arguments');
 		console.log('Usage:');
@@ -140,6 +143,7 @@ switch(process.argv[2]) {
 		console.log('node musselrunner.js service');
 
 }
+});
 
 function exitAfter(millis) {
 	setTimeout(function() {
@@ -152,46 +156,5 @@ var now = new Date();
 var twoMonthsAgo = new Date();
 twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 3);
 
-//syncUser("tp|2e55bc37d7|https://devel-api.tidepool.io", "jawbone", "2e55bc37d7");
-/**
-mussel.getActivityData("tp|0e5fab3f1a|https://devel-api.tidepool.io", "runkeeper", twoMonthsAgo.toISOString(), now.toISOString(), function(err, response) {
-	mussel.transformActivitiesToTidepoolActivities(response, function(err, response) {
-		//console.log(response);
-		var objects = response;
-		mussel.login(function(err, response) {
-			if (err) {
-				console.log("error logging in - exiting")
-				process.exit();
-			} else {
-				console.log("attempting to write objects:"+objects.length)
-				mussel.writeTPActivities_ToObjects(objects, "2e55bc37d7", "", function(err, response) {
-					if (err) {
-						console.log("write unsuccesful")
-						console.log(err);
-					}
-					else {
-						console.log("write succesful")
-						console.log(response);
-					}
-				})
-			}
-		})
-	})
-})
-**/
-
-/**
-mussel.login(function(err, response) {
-	mussel.getLastActivity_FromObjects("2e55bc37d7","jawbone", function(err, response) {
-		if (err) {
-			console.log("error:");
-			console.log(err)
-		} else {
-			//console.log(response);
-		}
-	})
-})
-
-**/
 
 
