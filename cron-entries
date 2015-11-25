@@ -1,1 +1,0 @@
-3 * * * * source /home/ec2-user/poc.sh;node /home/ec2-user/mussel/musselrunner.js sync >> /home/ec2-user/mussel/mussel.log

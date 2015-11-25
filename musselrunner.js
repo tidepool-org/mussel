@@ -46,6 +46,9 @@ var UPLOADER_LOGIN=process.env.UPLOADER_LOGIN;
 var UPLOADER_PASSWORD=process.env.UPLOADER_PASSWORD;
 var UPLOADER_USERID=process.env.UPLOADER_USERID;
 
+var MUSSEL_POLL_INTERVAL_MINUTES=process.env.MUSSEL_POLL_INTERVAL_MINUTES;
+
+var polling
 
 var tidepoolConfig = {
 			host: TIDEPOOL_HOST,
@@ -129,7 +132,9 @@ switch(process.argv[2]) {
 		app.listen(port, function() {
 		   console.log("Listening on " + port);
 		 });
-		var j = schedule.scheduleJob('*/2 * * * *', syncActivities);
+		var pollingSchedule= '*/'+MUSSEL_POLL_INTERVAL_MINUTES+' * * * *';
+		log.info('polling schedule:'+pollingSchedule);
+		var j = schedule.scheduleJob(pollingSchedule, syncActivities);
 		break;
 	default:
 		console.log('Incorrect arguments');
